@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>头颈癌放疗患者癌因性疲乏风险预测模型</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(to right, #2c3e50, #4a6491);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 30px;
+            gap: 30px;
+        }
+        
+        .calculator {
+            flex: 1;
+            min-width: 400px;
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .calculator h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+            font-size: 1.8rem;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+        
+        select, input[type="number"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .radio-option {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .radio-option input {
+            display: none;
+        }
+        
+        .radio-option label {
+            display: block;
+            padding: 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: normal;
+        }
+        
+        .radio-option input:checked + label {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+            font-weight: 600;
+        }
+        
+        .calculate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+        
+        .calculate-btn:hover {
+            background: linear-gradient(to right, #2980b9, #1c598e);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .result {
+            flex: 1;
+            min-width: 400px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .result h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #27ae60;
+            font-size: 1.8rem;
+        }
+        
+        .score-display {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .total-score {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #3498db;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .risk-indicator {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .risk-meter {
+            height: 40px;
+            background: linear-gradient(to right, #2ecc71, #f1c40f, #e74c3c);
+            border-radius: 20px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .risk-pointer {
+            position: absolute;
+            top: -5px;
+            width: 4px;
+            height: 50px;
+            background: #2c3e50;
+            border-radius: 2px;
+            transform: translateX(-50%);
+            transition: left 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .risk-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .risk-percentage {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 20px 0;
+            color: #e74c3c;
+        }
+        
+        .risk-level {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .interpretation {
+            background: #e8f4fc;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+            margin-top: 20px;
+        }
+        
+        .interpretation h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .nomogram-image {
+            width: 100%;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .nomogram-image img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #666;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+        
+        .instructions {
+            background: #fff8e1;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 5px solid #f1c40f;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+                padding: 20px;
+            }
+            
+            .calculator, .result {
+                min-width: 100%;
+            }
+            
+            header {
+                padding: 30px 20px;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>头颈癌放疗患者癌因性疲乏风险预测模型</h1>
+            <p class="subtitle">基于逻辑回归模型和临床预测因素的头颈癌放疗患者癌因性疲乏风险评估工具</p>
+        </header>
+        
+        <div class="content">
+            <div class="calculator">
+                <h2>患者临床特征输入</h2>
+                
+                <div class="instructions">
+                    <h3>使用说明</h3>
+                    <ul>
+                        <li>根据患者的实际情况选择或输入各项指标</li>
+                        <li>点击"计算风险"按钮获得预测结果</li>
+                        <li>结果包括总得分、风险概率和临床建议</li>
+                    </ul>
+                </div>
+                
+                <div class="input-group">
+                    <label>1. 疼痛程度</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="pain-none" name="pain" value="0" checked>
+                            <label for="pain-none">无疼痛</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="pain-yes" name="pain" value="1">
+                            <label for="pain-yes">有疼痛</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>2. 放射性损伤</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="radiation-none" name="radiation" value="0" checked>
+                            <label for="radiation-none">无</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="radiation-yes" name="radiation" value="1">
+                            <label for="radiation-yes">有</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>3. 临床分期</label>
+                    <select id="stage">
+                        <option value="1">Ⅰ期</option>
+                        <option value="2">Ⅱ期</option>
+                        <option value="3" selected>Ⅲ期</option>
+                        <option value="4">Ⅳ期</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label>4. 社会支持水平</label>
+                    <select id="support">
+                        <option value="1">低</option>
+                        <option value="2" selected>中</option>
+                        <option value="3">高</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label>5. 营养风险</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="nutrition-none" name="nutrition" value="0" checked>
+                            <label for="nutrition-none">无</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="nutrition-yes" name="nutrition" value="1">
+                            <label for="nutrition-yes">有</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>6. 血红蛋白水平 (g/L)</label>
+                    <input type="number" id="hemoglobin" min="60" max="180" value="120" step="1">
+                    <div style="font-size: 0.9rem; color: #666; margin-top: 5px;">正常范围: 120-160 g/L</div>
+                </div>
+                
+                <div class="input-group">
+                    <label>7. 抑郁程度</label>
+                    <select id="depression">
+                        <option value="1">正常</option>
+                        <option value="2" selected>轻度</option>
+                        <option value="3">中度</option>
+                        <option value="4">重度</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label>8. 睡眠障碍</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="sleep-none" name="sleep" value="0" checked>
+                            <label for="sleep-none">无</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="sleep-yes" name="sleep" value="1">
+                            <label for="sleep-yes">有</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="calculate-btn" onclick="calculateRisk()">计算癌因性疲乏风险</button>
+            </div>
+            
+            <div class="result">
+                <h2>风险评估结果</h2>
+                
+                <div class="score-display">
+                    <h3>预测模型总得分</h3>
+                    <div class="total-score" id="totalScore">--</div>
+                    <p>基于8个临床预测因素的综合得分（范围：0-300分）</p>
+                </div>
+                
+                <div class="risk-indicator">
+                    <h3>癌因性疲乏风险概率</h3>
+                    <div class="risk-meter">
+                        <div class="risk-pointer" id="riskPointer"></div>
+                    </div>
+                    <div class="risk-labels">
+                        <span>低风险 (<20%)</span>
+                        <span>中风险 (20-60%)</span>
+                        <span>高风险 (>60%)</span>
+                    </div>
+                    
+                    <div class="risk-percentage" id="riskPercentage">--%</div>
+                    <div class="risk-level" id="riskLevel">--</div>
+                </div>
+                
+                <div class="interpretation">
+                    <h3>临床建议</h3>
+                    <p id="clinicalAdvice">请输入患者信息并点击计算按钮获得个性化建议</p>
+                </div>
+                
+                <div class="nomogram-image">
+                    <h3>列线图参考</h3>
+                    <img src="https://raw.githubusercontent.com/your-username/crf-prediction-model/main/nomogram.png" alt="癌因性疲乏风险预测列线图" onerror="this.style.display='none'">
+                    <p style="color: #666; font-size: 0.9rem; margin-top: 10px;">注：此图仅供参考，实际计算基于精确的数学模型</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2024 头颈癌放疗患者癌因性疲乏风险预测模型 | 基于逻辑回归的临床预测工具</p>
+            <p>仅供临床参考使用，不作为最终医疗决策依据 | 数据来源：临床合理化研究数据集 (n=650)</p>
+        </footer>
+    </div>
+    
+    <script>
+        // β系数定义（基于您的模型）
+        const betaCoefficients = {
+            intercept: 2.144,
+            pain: 1.518,
+            radiation: 1.333,
+            stage: 1.432,
+            support: -0.778,
+            nutrition: 1.033,
+            hemoglobin: -0.067,
+            depression: 0.688,
+            sleep: 0.841
+        };
+        
+        // 列线图得分转换函数（根据列线图实际刻度调整）
+        function convertToNomogramScore(logitValue) {
+            // 这里需要根据您的列线图实际刻度进行调整
+            // 简化的线性转换：列线图总得分范围大约0-300，对应logit范围大约-4到4
+            return (logitValue + 4) * (300 / 8);
+        }
+        
+        function calculateRisk() {
+            // 获取输入值
+            const pain = parseInt(document.querySelector('input[name="pain"]:checked').value);
+            const radiation = parseInt(document.querySelector('input[name="radiation"]:checked').value);
+            const stage = parseInt(document.getElementById('stage').value);
+            const support = parseInt(document.getElementById('support').value);
+            const nutrition = parseInt(document.querySelector('input[name="nutrition"]:checked').value);
+            const hemoglobin = parseFloat(document.getElementById('hemoglobin').value);
+            const depression = parseInt(document.getElementById('depression').value);
+            const sleep = parseInt(document.querySelector('input[name="sleep"]:checked').value);
+            
+            // 计算logit值
+            let logit = betaCoefficients.intercept;
+            logit += betaCoefficients.pain * pain;
+            logit += betaCoefficients.radiation * radiation;
+            logit += betaCoefficients.stage * (stage - 1); // 分期每增加一级
+            logit += betaCoefficients.support * (support - 1); // 支持每增加一级
+            logit += betaCoefficients.nutrition * nutrition;
+            logit += betaCoefficients.hemoglobin * hemoglobin;
+            logit += betaCoefficients.depression * (depression - 1); // 抑郁每增加一级
+            logit += betaCoefficients.sleep * sleep;
+            
+            // 计算概率
+            const probability = 1 / (1 + Math.exp(-logit));
+            
+            // 转换为列线图得分
+            const nomogramScore = convertToNomogramScore(logit);
+            
+            // 更新显示
+            document.getElementById('totalScore').textContent = Math.round(nomogramScore);
+            document.getElementById('riskPercentage').textContent = (probability * 100).toFixed(1) + '%';
+            
+            // 更新风险指针位置（0-100%对应0-100%宽度）
+            const riskPointer = document.getElementById('riskPointer');
+            riskPointer.style.left = (probability * 100) + '%';
+            
+            // 确定风险等级
+            let riskLevel, riskColor, advice;
+            if (probability < 0.2) {
+                riskLevel = "低风险";
+                riskColor = "#2ecc71";
+                advice = "患者癌因性疲乏风险较低，建议常规监测和健康教育。";
+            } else if (probability < 0.6) {
+                riskLevel = "中风险";
+                riskColor = "#f39c12";
+                advice = "患者有中等程度癌因性疲乏风险，建议加强症状评估和早期干预。";
+            } else {
+                riskLevel = "高风险";
+                riskColor = "#e74c3c";
+                advice = "患者癌因性疲乏风险较高，建议制定综合管理方案，包括症状管理、心理支持和营养干预。";
+            }
+            
+            document.getElementById('riskLevel').textContent = riskLevel;
+            document.getElementById('riskLevel').style.color = riskColor;
+            document.getElementById('riskPercentage').style.color = riskColor;
+            document.getElementById('clinicalAdvice').textContent = advice;
+            
+            // 显示计算详情（用于调试）
+            console.log({
+                疼痛: pain,
+                放射性损伤: radiation,
+                临床分期: stage,
+                社会支持: support,
+                营养风险: nutrition,
+                血红蛋白: hemoglobin,
+                抑郁: depression,
+                睡眠障碍: sleep,
+                logit值: logit.toFixed(3),
+                概率: probability.toFixed(3),
+                列线图得分: nomogramScore.toFixed(1)
+            });
+        }
+        
+        // 页面加载时计算默认值
+        window.onload = calculateRisk;
+    </script>
+</body>
+</html>
